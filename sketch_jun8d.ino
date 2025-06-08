@@ -12,6 +12,7 @@ void setup() {
 void loop() {
   int sensorVal = digitalRead(SENSOR_PIN);  // Đọc giá trị tại SENSOR_PIN
   Serial.println(sensorVal);                // In giá trị cảm biến ra Serial Monitor
+
   if (sensorVal == HIGH) {
     // đảo trạng thái đầu ra (bật/tắt)
     outputState = !outputState;
@@ -19,6 +20,14 @@ void loop() {
     Serial.println(outputState ? "ON" : "OFF");
 
     delay(500); // chờ debounce
+
+    // đợi đến khi sensor trở về LOW mới tiếp tục
+    int timeout = 1000; // Giới hạn thời gian đợi cảm biến về LOW
+    int count = 0;
+    while (digitalRead(SENSOR_PIN) == HIGH && count < timeout) {
+      delay(10);
+      count += 10;
+    }
   }
 
   delay(50); // delay ngắn chống spam
