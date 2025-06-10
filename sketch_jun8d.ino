@@ -1,34 +1,26 @@
-const int SENSOR_PIN = 2;     // OUT của cảm biến âm thanh (hoặc nút nhấn trong Proteus)
-const int OUTPUT_PIN = 12;    // relay (mạch thật) hoặc LED (Proteus)
-bool outputState = false;     // Trạng thái relay hoặc LED
+const int testPin = 12;  
+const int relay = 2;      
+bool outputState = false; 
+bool lastState = LOW; // Lưu trạng thái trước đó của TestPin
 
 void setup() {
-  pinMode(SENSOR_PIN, INPUT);           // Cài đặt SENSOR_PIN là đầu vào
-  pinMode(OUTPUT_PIN, OUTPUT);          // Cài đặt OUTPUT_PIN là đầu ra
-  digitalWrite(OUTPUT_PIN, LOW);        // Khởi đầu với trạng thái tắt
-  Serial.begin(9600);                   // Bắt đầu Serial để debug với tốc độ 9600 baud
+  pinMode(testPin, INPUT);
+  pinMode(relay, OUTPUT);
+  digitalWrite(relay, LOW);
+  Serial.begin(9600);
 }
 
 void loop() {
-  int sensorVal = digitalRead(SENSOR_PIN);  // Đọc giá trị tại SENSOR_PIN
-  Serial.println(sensorVal);                // In giá trị cảm biến ra Serial Monitor
+  int sensorVal = digitalRead(testPin);
+  Serial.println(sensorVal);
 
-  if (sensorVal == HIGH) {
-    // đảo trạng thái đầu ra (bật/tắt)
+  // Chỉ kích hoạt khi có thay đổi từ LOW -> HIGH
+  if (sensorVal == HIGH && lastState == LOW || sensorVal == LOW && lastState == HIGH) { 
     outputState = !outputState;
-    digitalWrite(OUTPUT_PIN, outputState ? HIGH : LOW);
+    digitalWrite(relay, outputState ? HIGH : LOW);
     Serial.println(outputState ? "ON" : "OFF");
-
-    delay(500); // chờ debounce
-
-    // đợi đến khi sensor trở về LOW mới tiếp tục
-    int timeout = 1000; // Giới hạn thời gian đợi cảm biến về LOW
-    int count = 0;
-    while (digitalRead(SENSOR_PIN) == HIGH && count < timeout) {
-      delay(10);
-      count += 10;
-    }
   }
-
-  delay(50); // delay ngắn chống spam
+  
+  lastState = sensorVal; // Cập nhật trạng thái trước đó
+  delay(50); // Chống spam tín hiệu
 }
